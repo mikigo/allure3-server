@@ -1,0 +1,41 @@
+{
+  "name": "Allure3-Server",
+  "plugins": {
+	"dashboard": {
+            "options": {
+            "singleFile": false,
+            "reportName": "Dashboard",
+            "reportLanguage": "zh"
+      }
+    },
+    "awesome": {
+      "options": {
+        "reportName": "Allure3",
+        "singleFile": false,
+        "reportLanguage": "zh",
+        "open": false,
+        "publish": true
+      }
+    },
+    "allure2": {
+      "options": {
+        "reportName": "Allure2",
+        "singleFile": false,
+        "reportLanguage": "zh"
+      }
+    },
+    "csv": {
+      "options": {
+        "fileName": "allure-report.csv"
+      }
+    },
+    "log": {
+      "options": {
+        "groupBy": "none"
+      }
+    }
+  },
+  "variables": {
+    "env_variable": "unknown"
+  }
+}
