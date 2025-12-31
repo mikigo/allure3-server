@@ -2,10 +2,26 @@
   "name": "Allure3-Server",
   "plugins": {
 	"dashboard": {
-            "options": {
-            "singleFile": false,
-            "reportName": "Dashboard",
-            "reportLanguage": "zh"
+      "options": {
+      "singleFile": false,
+      "reportName": "Dashboard",
+      "reportLanguage": "zh",
+        "layout": [
+          {
+            "type": "pie",
+            "title": "Test Status Distribution"
+          },
+          {
+            "type": "trend",
+            "dataType": "status",
+            "title": "Status Over Time"
+          },
+          {
+            "type": "bar",
+            "dataType": "statusBySeverity",
+            "title": "Results by Severity"
+          }
+        ]
       }
     },
     "awesome": {
