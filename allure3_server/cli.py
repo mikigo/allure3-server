@@ -9,9 +9,12 @@ from allure3_server.__version__ import __version__ as version
 def cli():
     """Allure3 Server CLI"""
 
+
 @cli.command('start', help="启动 Allure3 Server")
 def start():
     from allure3_server.main import Allure3Server
+    from allure3_server.check_env import check_npm_env
+    check_npm_env()
     Allure3Server().start()
 
 
