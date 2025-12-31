@@ -3,6 +3,7 @@ import sys
 
 if __name__ == '__main__':
     sys.argv.extend([
-        'start'
+        'start',
+        "--host-ip", "10.0.20.202"
     ])
     cli()

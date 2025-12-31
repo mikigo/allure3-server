@@ -1,4 +1,5 @@
 import os
+import pathlib
 import shutil
 import subprocess
 import uuid
@@ -11,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from allure3_server.config import config
+from allure3_server.check_env import check_npm_env
 
 
 class ExecutorInfo(BaseModel):
@@ -32,12 +34,24 @@ class GenerateReportRequest(BaseModel):
 
 class Allure3Server:
 
-    def __init__(self, results_dir: str = None, reports_dir: str = None):
+    def __init__(self,
+                 *,
+                 results_dir: str = None,
+                 reports_dir: str = None,
+                 host_ip: str = None,
+                 port: int = None,
+                 allure2: bool = False,
+                 ):
 
         self.results_dir = results_dir or config.RESULTS_DIR
         os.makedirs(self.results_dir, exist_ok=True)
         self.reports_dir = reports_dir or config.REPORTS_DIR
         os.makedirs(self.reports_dir, exist_ok=True)
+
+        self.allure2 = allure2
+        self.host_ip = host_ip or config.HOST_IP
+        self.port = port or config.PORT
+
         self.app = FastAPI(title="Allure3 Server",
                            description="A simple server for generating and serving Allure reports")
         self.setup_routes()
@@ -106,22 +120,26 @@ class Allure3Server:
     async def generate_report(self, request: GenerateReportRequest = Body(...)):
         try:
             result_path = os.path.join(self.results_dir, request.uuid)
+            if not pathlib.Path(result_path).exists():
+                raise HTTPException(status_code=404, detail=f"Allure results not found: {request.uuid}")
             report_path = os.path.join(self.reports_dir, request.uuid)
             os.makedirs(report_path, exist_ok=True)
-            generate_cmd = [
-                "npx",
+            generate_cmd = []
+            if self.allure2 is False:
+                check_npm_env()
+                generate_cmd.append("npx")
+            generate_cmd.extend([
                 "allure",
                 "generate",
                 result_path,
                 "-o",
                 report_path
-            ]
-
+            ])
             subprocess.run(generate_cmd, shell=True, check=True)
 
             return {
                 "uuid": request.uuid,
-                "url": f"http://{config.HOST_IP}:{config.PORT}/reports/{request.uuid}/",
+                "url": f"http://{self.host_ip}:{self.port}/reports/{request.uuid}/",
             }
         except subprocess.CalledProcessError as e:
             raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
@@ -167,4 +185,4 @@ class Allure3Server:
 
     def start(self):
         self.app.mount("/reports", StaticFiles(directory=self.reports_dir, html=True), name="reports")
-        uvicorn.run(self.app, host=config.HOST_IP, port=config.PORT)
+        uvicorn.run(self.app, host=self.host_ip, port=self.port)

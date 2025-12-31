@@ -1,7 +1,7 @@
 import requests
 import pathlib
 
-url = "http://127.0.0.1:8000/api/result"
+url = "http://10.0.20.202:8000/api/result"
 zipfile_path = "./allure-results.zip"
 filename = pathlib.Path(zipfile_path).name
 headers = {"accept": "*/*"}

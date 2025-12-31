@@ -1,8 +1,8 @@
 import requests
 
-url = "http://127.0.0.1:8000/api/report"
+url = "http://10.0.20.202:8000/api/report"
 headers = {"Content-Type": "application/json"}
 
-resp = requests.post(url, headers=headers, data='{"uuid":"d3b90916-2184-4800-beb7-0c002abe96d9"}')
+resp = requests.post(url, headers=headers, data='{"uuid":"87b5ae6e-3e3e-4937-9509-54bd0ff12623"}')
 result = resp.json()
 print(result)
