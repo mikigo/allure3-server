@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allure3 Server</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Allure3 Server</h1>
+    
+    <!-- 上传测试结果部分 -->
+    <div class="section">
+        <h2>Upload Test Results</h2>
+        <form id="uploadForm">
+            <input type="file" id="resultsFile" name="resultsFile" accept=".zip,.json">
+            <button type="submit">Upload</button>
+        </form>
+        <div class="result" id="uploadResult"></div>
+    </div>
+    
+    <!-- 生成报告部分 -->
+    <div class="section">
+        <h2>Generate Report</h2>
+        <form id="generateForm">
+            <label for="resultId">Result ID:</label>
+            <input type="text" id="resultId" name="resultId" required>
+            <input type="text" id="path1" placeholder="路径1 (如: master)">
+            <input type="text" id="path2" placeholder="路径2 (如: 666)">
+            <input type="text" id="buildName" placeholder="构建名称 (如: #666)">
+            <label><input type="checkbox" id="deleteResults"> 删除结果文件</label>
+            <button type="submit">Generate Report</button>
+        </form>
+        <div class="result" id="generateResult"></div>
+        <div id="reportLink"></div>
+    </div>
+    
+    <!-- 查看报告部分 -->
+    <div class="section">
+        <h2>View Reports</h2>
+        <button id="listReports">List All Reports</button>
+        <div id="reportsList"></div>
+    </div>
+    
+    <script>
+        // 上传测试结果
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('resultsFile').files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('allureResults', file);
+            
+            const response = await fetch('/api/result', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            document.getElementById('uploadResult').textContent = JSON.stringify(result, null, 2);
+            
+            // 将生成的uuid自动填充到生成报告表单中
+            if (result.uuid) {
+                document.getElementById('resultId').value = result.uuid;
+            }
+        });
+        
+        // 生成报告
+        document.getElementById('generateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultId = document.getElementById('resultId').value;
+            const path1 = document.getElementById('path1').value;
+            const path2 = document.getElementById('path2').value;
+            const buildName = document.getElementById('buildName').value;
+            const deleteResults = document.getElementById('deleteResults').checked;
+            
+            // 构建路径数组
+            const path = [];
+            if (path1) path.push(path1);
+            if (path2) path.push(path2);
+            
+            // 构建请求体
+            const requestBody = {
+                reportSpec: {
+                    path: path.length > 0 ? path : ['default'],
+                    executorInfo: buildName ? { buildName } : undefined
+                },
+                results: [resultId],
+                deleteResults: deleteResults
+            };
+            
+            const response = await fetch('/api/report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const result = await response.json();
+            document.getElementById('generateResult').textContent = JSON.stringify(result, null, 2);
+            
+            // 如果生成成功，显示报告链接
+            if (result.url) {
+                const reportLink = document.getElementById('reportLink');
+                reportLink.innerHTML = `<a href="${result.url}" target="_blank">View Report</a>`;
+            }
+        });
+        
+        // 列出报告
+        document.getElementById('listReports').addEventListener('click', async () => {
+            const response = await fetch('/api/reports');
+            const result = await response.json();
+            
+            const reportsList = document.getElementById('reportsList');
+            reportsList.innerHTML = '<h3>Reports:</h3>';
+            
+            if (result.reports && result.reports.length > 0) {
+                const ul = document.createElement('ul');
+                result.reports.forEach(report => {
+                    const li = document.createElement('li');
+                    const date = new Date(report.created_at * 1000).toLocaleString();
+                    li.innerHTML = `
+                        <strong>Report ID:</strong> ${report.report_id}<br>
+                        <strong>Created:</strong> ${date}<br>
+                        <a href="${report.report_url}" target="_blank">View Report</a>
+                    `;
+                    ul.appendChild(li);
+                });
+                reportsList.appendChild(ul);
+            } else {
+                reportsList.innerHTML += '<p>No reports found.</p>';
+            }
+        });
+    </script>
+</body>
+</html>
