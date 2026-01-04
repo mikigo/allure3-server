@@ -6,13 +6,13 @@ import uuid
 import zipfile
 from typing import List, Optional
 
+import fastapi_cdn_host
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from allure3_server.config import config
-from allure3_server.check_env import check_npm_env
 
 
 class ExecutorInfo(BaseModel):
@@ -40,7 +40,7 @@ class Allure3Server:
                  reports_dir: str = None,
                  host_ip: str = None,
                  port: int = None,
-                 allure2: bool = False,
+                 config_file: int = None,
                  ):
 
         self.results_dir = results_dir or config.RESULTS_DIR
@@ -48,9 +48,9 @@ class Allure3Server:
         self.reports_dir = reports_dir or config.REPORTS_DIR
         os.makedirs(self.reports_dir, exist_ok=True)
 
-        self.allure2 = allure2
         self.host_ip = host_ip or config.HOST_IP
         self.port = port or config.PORT
+        self.config_file = config_file or config.CONFIG_FILE
 
         self.app = FastAPI(title="Allure3 Server",
                            description="A simple server for generating and serving Allure reports")
@@ -58,6 +58,7 @@ class Allure3Server:
 
     def setup_routes(self):
         app = self.app
+        fastapi_cdn_host.patch_docs(app, pathlib.Path(config.STATIC_DIR))
 
         @app.get("/")
         async def root():
@@ -124,16 +125,15 @@ class Allure3Server:
                 raise HTTPException(status_code=404, detail=f"Allure results not found: {request.uuid}")
             report_path = os.path.join(self.reports_dir, request.uuid)
             os.makedirs(report_path, exist_ok=True)
-            generate_cmd = []
-            if self.allure2 is False:
-                check_npm_env()
-                generate_cmd.append("npx")
+            generate_cmd = ["npx"]
             generate_cmd.extend([
                 "allure",
                 "generate",
                 result_path,
                 "-o",
-                report_path
+                report_path,
+                "--config",
+                self.config_file,
             ])
             subprocess.run(generate_cmd, shell=True, check=True)
 
@@ -185,4 +185,5 @@ class Allure3Server:
 
     def start(self):
         self.app.mount("/reports", StaticFiles(directory=self.reports_dir, html=True), name="reports")
+
         uvicorn.run(self.app, host=self.host_ip, port=self.port)

@@ -11,24 +11,27 @@ def cli():
 
 
 @cli.command('start', help="启动 Allure3 Server")
-@click.option('--results-dir', default=None, type=click.STRING, help="服务 IP")
-@click.option('--reports-dir', default=None, type=click.STRING, help="服务 IP")
-@click.option('--host-ip', default=None, help="服务 IP")
-@click.option('--port', default=None, help="服务端口")
-@click.option('--allure2', is_flag=True, default=False, help="allure2风格")
+@click.option('--results-dir', '--results', default=None, type=click.STRING, help="result 目录")
+@click.option('--reports-dir', '--reports', default=None, type=click.STRING, help="report 目录")
+@click.option('-h', '--host-ip', default=None, help="服务 IP")
+@click.option('-p', '--port', default=None, help="服务端口")
+@click.option('-c', '--config', default=None, help="配置文件路径")
 def start(
         results_dir,
         reports_dir,
         host_ip,
         port,
-        allure2):
+        config,
+):
     from allure3_server.main import Allure3Server
+    from allure3_server.check_env import check_npm_env
+    check_npm_env()
     Allure3Server(
         results_dir=results_dir,
         reports_dir=reports_dir,
         host_ip=host_ip,
         port=port,
-        allure2=allure2,
+        config_file=config,
     ).start()
 
 

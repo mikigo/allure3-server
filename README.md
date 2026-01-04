@@ -31,30 +31,33 @@
 
 1. 启动服务器：
    ```bash
-   python main.py
+   allure3-server start
    ```
 
-2. 打开浏览器并导航到 `http://localhost:8000` 访问Web界面
+2. 打开浏览器并导航到 `http://localhost:8000/docs` 访问Web界面
 
-3. 或者，你可以直接使用API端点：
 
-### API端点
+## API
 
-#### 上传测试结果
-- **POST** `/api/result`
-- 表单数据：`allureResults`（包含Allure 3结果的ZIP文件）
-- 响应：包含 `fileName` 和 `uuid` 的JSON
+### 上传测试结果
+参考 `test/upload_results.py`
 
 示例请求（Python）：
 ```python
 import requests
+import pathlib
 
-url = "http://localhost:8080/api/result"
-files = {
-    "allureResults": open("allure-results.zip", "rb")
-}
-response = requests.post(url, files=files)
-print(response.json())
+url = "http://10.0.20.202:8000/api/result"
+zipfile_path = "./allure-results.zip"
+filename = pathlib.Path(zipfile_path).name
+headers = {"accept": "*/*"}
+with open(zipfile_path, "rb") as file:
+   files = {
+      "allure_results": (filename, file, "application/x-zip-compressed"),
+   }
+   resp = requests.post(url, files=files, headers=headers)
+   result = resp.json()
+   print(result)
 ```
 
 示例响应：
@@ -65,38 +68,19 @@ print(response.json())
 }
 ```
 
-#### 生成报告
-- **POST** `/api/report`
-- 请求体：包含报告规格的JSON
-- 响应：包含报告信息的JSON
+### 生成报告
+参考 `test/generate_report.py`
 
 示例请求（Python）：
 ```python
 import requests
-import json
 
-url = "http://localhost:8080/api/report"
-headers = {
-    "Content-Type": "application/json"
-}
-payload = {
-    "reportSpec": {
-        "path": [
-            "master",
-            "666"
-        ],
-        "executorInfo": {
-            "buildName": "#666"
-        }
-    },
-    "results": [
-        "1037f8be-68fb-4756-98b6-779637aa4670"
-    ],
-    "deleteResults": False
-}
+url = "http://10.0.20.202:8000/api/report"
+headers = {"Content-Type": "application/json"}
 
-response = requests.post(url, headers=headers, data=json.dumps(payload))
-print(response.json())
+resp = requests.post(url, headers=headers, data='{"uuid":"87b5ae6e-3e3e-4937-9509-54bd0ff12623"}')
+result = resp.json()
+print(result)
 ```
 
 示例响应：
@@ -104,65 +88,8 @@ print(response.json())
 {
     "uuid": "c994654d-6d6a-433c-b8e3-90c77d0e8163",
     "path": "master/666",
-    "url": "http://localhost:8080/allure/reports/c994654d-6d6a-433c-b8e3-90c77d0e8163/",
-    "latest": "http://localhost:8080/reports/master/666"
+    "url": "http://localhost:8000/reports/87b5ae6e-3e3e-4937-9509-54bd0ff12623/",
+ 
 }
 ```
 
-#### 列出报告
-- **GET** `/api/reports`
-- 响应：包含报告列表的JSON
-
-示例请求（Python）：
-```python
-import requests
-
-url = "http://localhost:8080/api/reports"
-response = requests.get(url)
-print(response.json())
-```
-
-#### 查看报告
-- **GET** `/reports/{report_id}`
-- **GET** `/allure/reports/{report_id}/`
-
-## 示例工作流程
-
-1. 上传测试结果：
-   ```python
-   import requests
-
-   url = "http://localhost:8080/api/result"
-   files = {
-       "allureResults": open("allure-results.zip", "rb")
-   }
-   response = requests.post(url, files=files)
-   result = response.json()
-   result_uuid = result["uuid"]
-   ```
-
-2. 生成报告（使用上一步的UUID）：
-   ```python
-   import requests
-   import json
-
-   url = "http://localhost:8080/api/report"
-   headers = {
-       "Content-Type": "application/json"
-   }
-   payload = {
-       "reportSpec": {
-           "path": ["master", "666"],
-           "executorInfo": {
-               "buildName": "#666"
-           }
-       },
-       "results": [result_uuid],
-       "deleteResults": False
-   }
-
-   response = requests.post(url, headers=headers, data=json.dumps(payload))
-   report_info = response.json()
-   ```
-
-3. 查看报告：在浏览器中打开响应中的 `url` 或 `latest` URL

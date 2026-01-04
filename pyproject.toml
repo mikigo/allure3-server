@@ -1,0 +1,58 @@
+[project]
+name = "allure3-server"
+description = ""
+authors = [
+    { name = "mikigo", email = "mikigo@foxmail.com" },
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "python-multipart",
+    "fastapi-cdn-host",
+    "click",
+]
+dynamic = [
+  "version",
+]
+requires-python = ">=3.6"
+readme = "README.md"
+license = { text = "Apache2.0" }
+
+[project.optional-dependencies]
+
+[project.scripts]
+allure3-server = "allure3_server.cli:cli"
+
+[project.entry-points.pytest11]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch]
+version = { path = "allure3_server/__version__.py" }
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "/allure3_server",
+]
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/.venv",
+  "/.env",
+  "/.idea",
+  "/.pytest_cache",
+  "/.gitignore",
+  "/dist",
+  "/docs",
+  "/tests",
+  "/debug.py",
+  "/run.py",
+  "/pytest.ini",
+  "/metadata",
+  "/publish.bat",
+  "/reports",
+  "/results",
+]
