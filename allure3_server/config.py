@@ -13,7 +13,11 @@ class _Config:
     assert os.path.exists(os.path.join(STATIC_DIR, "swagger-ui.css"))
     assert os.path.exists(os.path.join(STATIC_DIR, "swagger-ui-bundle.js"))
 
+    FAVICON_URL = os.path.join(STATIC_DIR, "favicon.png")
+    assert os.path.exists(FAVICON_URL)
+
     HOST_IP = socket.gethostbyname(socket.gethostname())
     PORT = 8000
+
 
 config = _Config()
