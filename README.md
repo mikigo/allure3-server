@@ -16,7 +16,7 @@
 2. 安装依赖：
 
    ```bash
-   pip install -r requirements.txt
+   pip install -r allur3-server
    ```
 
 3. 安装Allure 3（使用npm）：

@@ -184,5 +184,5 @@ class Allure3Server:
 
     def start(self):
         self.app.mount("/reports", StaticFiles(directory=self.reports_dir, html=True), name="reports")
-        fastapi_cdn_host.patch_docs(app=self.app, cdn_host=config.STATIC_DIR, favicon_url=config.FAVICON_URL)
+        fastapi_cdn_host.patch_docs(app=self.app, cdn_host=config.STATIC_DIR)
         uvicorn.run(self.app, host=self.host_ip, port=self.port)
