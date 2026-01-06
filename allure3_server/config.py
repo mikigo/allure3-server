@@ -1,6 +1,4 @@
 import os
-import socket
-
 
 class _Config:
     CURRENT_DIR = os.path.abspath(".")
@@ -16,7 +14,7 @@ class _Config:
     FAVICON_URL = os.path.join(STATIC_DIR, "favicon.png")
     assert os.path.exists(FAVICON_URL)
 
-    HOST_IP = socket.gethostbyname(socket.gethostname())
+    HOST_IP = "127.0.0.1"
     PORT = 8000
 
 
