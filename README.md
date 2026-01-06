@@ -34,8 +34,9 @@
 
 2. 打开浏览器并导航到 `http://localhost:8000/ 访问Web界面
 
-
 ## API
+
+![](docs.png)
 
 ### 上传测试结果
 参考 `test/upload_results.py`
