@@ -1,25 +1,23 @@
 # Allure3 Server
 
-一个使用FastAPI构建的简单服务器，用于生成和提供Allure 3报告，兼容Allure 3的新架构和特性。
+ 使用 FastAPI 构建的服务器，用于生成和提供 [Allure3](https://github.com/allure-framework/allure3) 报告。
 
 ## 功能
 
-- 上传测试结果（包含Allure 3结果的ZIP文件）
-- 生成带有自定义路径和执行器信息的Allure 3报告
+- 上传测试结果（包含 Allure 结果的 ZIP 文件）
+- 生成 Allure3 报告，并返回可访问的 URL
 - 列出所有生成的报告
-- 将生成的报告作为静态文件提供
+- 删除报告
 
 ## 安装
 
-1. 克隆或下载此仓库
-
-2. 安装依赖：
+1. 安装依赖：
 
    ```bash
    pip install -r allur3-server
    ```
 
-3. 安装Allure 3（使用npm）：
+3. 安装Allure3（使用npm）：
    
    ```bash
    npm install -g allure
@@ -34,7 +32,7 @@
    allure3-server start
    ```
 
-2. 打开浏览器并导航到 `http://localhost:8000/docs` 访问Web界面
+2. 打开浏览器并导航到 `http://localhost:8000/ 访问Web界面
 
 
 ## API
