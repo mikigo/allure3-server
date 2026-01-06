@@ -8,7 +8,6 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "python-multipart",
-    "fastapi-cdn-host",
     "click",
 ]
 dynamic = [

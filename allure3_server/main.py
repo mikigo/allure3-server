@@ -6,12 +6,14 @@ import uuid
 import zipfile
 from typing import List, Optional
 
-import fastapi_cdn_host
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body
+from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.responses import RedirectResponse
 
+from allure3_server.__version__ import __version__ as version
 from allure3_server.config import config
 
 
@@ -34,14 +36,15 @@ class GenerateReportRequest(BaseModel):
 
 class Allure3Server:
 
-    def __init__(self,
-                 *,
-                 results_dir: str = None,
-                 reports_dir: str = None,
-                 host_ip: str = None,
-                 port: int = None,
-                 config_file: int = None,
-                 ):
+    def __init__(
+            self,
+            *,
+            results_dir: str = None,
+            reports_dir: str = None,
+            host_ip: str = None,
+            port: int = None,
+            config_file: int = None,
+    ):
 
         self.results_dir = results_dir or config.RESULTS_DIR
         os.makedirs(self.results_dir, exist_ok=True)
@@ -52,16 +55,54 @@ class Allure3Server:
         self.port = port or config.PORT
         self.config_file = config_file or config.CONFIG_FILE
 
-        self.app = FastAPI(title="Allure3 Server",
-                           description="A simple server for generating and serving Allure reports")
+        self.app = FastAPI(
+            title="Allure3 Server",
+            description="A simple server for generating and serving Allure reports",
+            version=str(version),
+            docs_url=None,
+            redoc_url=None
+        )
         self.setup_routes()
+
+    def _mount_static_files(self, app: FastAPI):
+        app.mount(
+            "/reports",
+            StaticFiles(
+                directory=pathlib.Path(self.reports_dir).resolve(),
+                html=True
+            ),
+            name="reports"
+        )
+        app.mount(
+            "/static",
+            StaticFiles(
+                directory=pathlib.Path(config.STATIC_DIR).resolve(),
+                follow_symlink=True,
+                check_dir=True,
+            ),
+            name="static"
+        )
+
+        @app.get("/docs", include_in_schema=False)
+        async def custom_swagger_ui_html():
+            return get_swagger_ui_html(
+                openapi_url=app.openapi_url,
+                title=app.title + " - Swagger UI",
+                oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+                swagger_js_url="/static/swagger-ui-bundle.js",
+                swagger_css_url="/static/swagger-ui.css",
+            )
+
+        @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
+        async def swagger_ui_redirect():
+            return get_swagger_ui_oauth2_redirect_html()
 
     def setup_routes(self):
         app = self.app
 
         @app.get("/")
         async def root():
-            return {"message": "Allure3 Server is running!"}
+            return RedirectResponse(url="/docs")
 
         @app.post("/api/result")
         async def upload_results(allure_results: UploadFile = File(...)):
@@ -78,9 +119,6 @@ class Allure3Server:
         @app.delete("/api/reports/{report_id}")
         async def delete_report(report_id: str):
             return await self.delete_report(report_id)
-
-    async def root(self):
-        return {"message": "Allure3 Server is running!"}
 
     async def upload_results(self, allure_results: UploadFile = File(...)):
         try:
@@ -149,17 +187,13 @@ class Allure3Server:
             for report_id in os.listdir(self.reports_dir):
                 report_path = os.path.join(self.reports_dir, report_id)
                 if os.path.isdir(report_path):
-                    # 获取报告创建时间
                     created_at = os.path.getctime(report_path)
                     reports.append({
                         "report_id": report_id,
                         "created_at": created_at,
                         "report_url": f"/reports/{report_id}"
                     })
-
-            # 按创建时间排序
             reports.sort(key=lambda x: x["created_at"], reverse=True)
-
             return {"reports": reports}
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error listing reports: {str(e)}")
@@ -168,14 +202,9 @@ class Allure3Server:
     async def delete_report(self, report_id: str):
         try:
             report_path = os.path.join(self.reports_dir, report_id)
-
-            # 检查报告是否存在
             if not os.path.exists(report_path):
                 raise HTTPException(status_code=404, detail="Report not found")
-
-            # 删除报告目录
             shutil.rmtree(report_path)
-
             return {"message": "Report deleted successfully"}
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error deleting report: {str(e)}")
@@ -183,6 +212,5 @@ class Allure3Server:
     # 配置静态文件服务
 
     def start(self):
-        self.app.mount("/reports", StaticFiles(directory=self.reports_dir, html=True), name="reports")
-        fastapi_cdn_host.patch_docs(app=self.app, cdn_host=config.STATIC_DIR)
+        self._mount_static_files(self.app)
         uvicorn.run(self.app, host=self.host_ip, port=self.port)
