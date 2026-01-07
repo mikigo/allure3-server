@@ -93,6 +93,7 @@ class Allure3Server:
                 swagger_css_url="/static/swagger-ui.css",
                 swagger_favicon_url="/static/favicon.png",
             )
+
         @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
         async def swagger_ui_redirect():
             return get_swagger_ui_oauth2_redirect_html()
@@ -172,7 +173,13 @@ class Allure3Server:
                 "--config",
                 self.config_file,
             ])
-            subprocess.run(generate_cmd, shell=True, check=True)
+            proc = subprocess.run(generate_cmd,
+                                  capture_output=True,
+                                  shell=False,
+                                  check=True,
+                                  text=True)
+            print(proc.stdout)
+            print(proc.stderr)
 
             return {
                 "uuid": request.uuid,
