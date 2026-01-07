@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 import shutil
@@ -163,7 +164,7 @@ class Allure3Server:
                 raise HTTPException(status_code=404, detail=f"Allure results not found: {request.uuid}")
             report_path = os.path.join(self.reports_dir, request.uuid)
             os.makedirs(report_path, exist_ok=True)
-            generate_cmd = ["npx"]
+            generate_cmd = [shutil.which('npx')]
             generate_cmd.extend([
                 "allure",
                 "generate",
@@ -177,7 +178,8 @@ class Allure3Server:
                                   capture_output=True,
                                   shell=False,
                                   check=True,
-                                  text=True)
+                                  text=True,
+                                  encoding="utf-8")
             print(proc.stdout)
             print(proc.stderr)
 
