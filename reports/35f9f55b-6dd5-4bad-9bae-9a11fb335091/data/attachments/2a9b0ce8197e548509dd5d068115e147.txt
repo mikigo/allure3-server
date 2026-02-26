@@ -1,0 +1,18 @@
+检测到下载: SYM_IC_BA10393F.c
+等待中... 已捕获 1/6
+检测到下载: SYM_IC_BA10393F.p
+等待中... 已捕获 2/6
+检测到下载: SYM_IC_BA10393FD.zip
+等待中... 已捕获 3/6
+检测到下载: SYM_IC_BA10393FX.zip
+等待中... 已捕获 4/6
+检测到下载: SYM_IC_BA10393FOrCAD.zip
+等待中... 已捕获 5/6
+检测到下载: SYM_IC_BA10393F_Part.hkp
+等待中... 已捕获 6/6
+[1/6] 已保存: SYM_IC_BA10393F.c
+[2/6] 已保存: SYM_IC_BA10393F.p
+[3/6] 已保存: SYM_IC_BA10393FD.zip
+[4/6] 已保存: SYM_IC_BA10393FX.zip
+[5/6] 已保存: SYM_IC_BA10393FOrCAD.zip
+[6/6] 已保存: SYM_IC_BA10393F_Part.hkp

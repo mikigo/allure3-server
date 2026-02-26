@@ -1,0 +1,16 @@
+检测到下载: PCF8591.c
+检测到下载: PCF8591.p
+已保存: PCF8591.c
+已保存: PCF8591.p
+检测到下载: PCF8591D.zip
+已保存: PCF8591D.zip
+检测到下载: PCF8591OrCAD.zip
+已保存: PCF8591OrCAD.zip
+检测到下载: PCF8591X.zip
+已保存: PCF8591X.zip
+已删除: C:\Users\Administrator\Desktop\autotest-autolib-ts\res\PCF8591.c
+已删除关联的.p文件: C:\Users\Administrator\Desktop\autotest-autolib-ts\res\PCF8591.p
+已删除: C:\Users\Administrator\Desktop\autotest-autolib-ts\res\PCF8591D.zip
+已删除: C:\Users\Administrator\Desktop\autotest-autolib-ts\res\PCF8591OrCAD.zip
+已删除: C:\Users\Administrator\Desktop\autotest-autolib-ts\res\PCF8591X.zip
+所有指定文件删除完成！

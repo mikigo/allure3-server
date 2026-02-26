@@ -8,8 +8,8 @@ import zipfile
 from typing import List, Optional
 
 import uvicorn
+import fastapi_self_hosting_docs
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body
-from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.responses import RedirectResponse
@@ -74,30 +74,7 @@ class Allure3Server:
             ),
             name="reports"
         )
-        app.mount(
-            "/static",
-            StaticFiles(
-                directory=pathlib.Path(config.STATIC_DIR).resolve(),
-                follow_symlink=True,
-                check_dir=True,
-            ),
-            name="static"
-        )
-
-        @app.get("/docs", include_in_schema=False)
-        async def custom_swagger_ui_html():
-            return get_swagger_ui_html(
-                openapi_url=app.openapi_url,
-                title=app.title + " - Swagger UI",
-                oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-                swagger_js_url="/static/swagger-ui-bundle.js",
-                swagger_css_url="/static/swagger-ui.css",
-                swagger_favicon_url="/static/favicon.png",
-            )
-
-        @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
-        async def swagger_ui_redirect():
-            return get_swagger_ui_oauth2_redirect_html()
+        fastapi_self_hosting_docs.mount(app)
 
     def setup_routes(self):
         app = self.app

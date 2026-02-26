@@ -1,4 +1,5 @@
 fastapi
 uvicorn
+fastapi-self-host-docs
 python-multipart
 click

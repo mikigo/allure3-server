@@ -1,0 +1,3 @@
+首次点击失败，5秒后重试...
+文件已下载至: C:\Users\Administrator\Desktop\autotest-autolib-ts\res
+Successfully deleted
