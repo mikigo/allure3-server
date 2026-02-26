@@ -1,17 +1,16 @@
 import subprocess
 import sys
 import shutil
-import os
 
 
 def check_npm_installed():
     """检查 npm 是否已安装"""
-    npm_path = shutil.which('npm')
+    npm_path = shutil.which("npm")
     if npm_path:
         try:
-            version_result = subprocess.run([npm_path, '--version'],
-                                            capture_output=True,
-                                            text=True)
+            version_result = subprocess.run(
+                [npm_path, "--version"], capture_output=True, text=True
+            )
             if version_result.returncode == 0:
                 return True
         except (subprocess.SubprocessError, FileNotFoundError):
@@ -22,9 +21,7 @@ def check_npm_installed():
 
 def check_node_installed():
     try:
-        result = subprocess.run(['node', '--version'],
-                                capture_output=True,
-                                text=True)
+        result = subprocess.run(["node", "--version"], capture_output=True, text=True)
         if result.returncode == 0:
             return True
     except (subprocess.SubprocessError, FileNotFoundError):
